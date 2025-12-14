@@ -13,3 +13,4 @@ As the MealieMcp server interacts with external systems (Mealie API) and is inte
     -   Enable HTTP Client instrumentation to capture outgoing requests to Mealie.
     -   (Optional) Add a custom `ActivitySource` for `MealieMcp` to trace internal tool execution if the MCP SDK doesn't provide it automatically.
 4.  **Environment Support:** Ensure standard OTel environment variables (e.g., `OTEL_EXPORTER_OTLP_ENDPOINT`) are respected.
+5.  **Deployment:** Update `Dockerfile` to expose relevant OpenTelemetry environment variables with default values where appropriate.

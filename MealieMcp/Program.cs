@@ -4,10 +4,42 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+var serviceName = "MealieMcp";
+
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.ParseStateValues = true;
+    logging.AddOtlpExporter();
+});
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(serviceName: serviceName))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource(serviceName)
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation() // Assuming AspNetCore is used implicitly by Host.CreateApplicationBuilder
+            .AddOtlpExporter();
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddRuntimeInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation() // Assuming AspNetCore is used implicitly by Host.CreateApplicationBuilder
+            .AddOtlpExporter();
+    });
 
 builder.Services.AddHttpClient<MealieClient>()
     .ConfigureHttpClient((sp, client) =>

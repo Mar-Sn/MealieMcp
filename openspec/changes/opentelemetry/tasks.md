@@ -10,6 +10,7 @@
     -   [ ] Update `Program.cs` to configure OpenTelemetry Tracing (add source `MealieMcp`, instrument HttpClient, add OTLP exporter). <!-- id: 3 -->
     -   [ ] Update `Program.cs` to configure OpenTelemetry Metrics (instrument Runtime, HttpClient, add OTLP exporter). <!-- id: 4 -->
     -   [ ] Update `Program.cs` to configure OpenTelemetry Logging. <!-- id: 5 -->
+    -   [ ] Update `Dockerfile` to expose `OTEL_` environment variables (e.g., `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`). <!-- id: 9 -->
 
 3.  **Validation**
     -   [ ] Verify the application builds with new dependencies. <!-- id: 6 -->

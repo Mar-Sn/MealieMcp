@@ -19,5 +19,11 @@ FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
+# OpenTelemetry Configuration
+ENV OTEL_SERVICE_NAME="MealieMcp"
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+ENV OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
+ENV ASPNETCORE_URLS="http://+:8080" # Listen on all interfaces
+
 # The entrypoint is the executable name
 ENTRYPOINT ["./MealieMcp"]
