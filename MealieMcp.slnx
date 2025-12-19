@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="MealieMcp.Tests/MealieMcp.Tests.csproj" />
   <Project Path="MealieMcp/MealieMcp.csproj" />
+  <Project Path="OpenApiPatcher/OpenApiPatcher.csproj" />
 </Solution>

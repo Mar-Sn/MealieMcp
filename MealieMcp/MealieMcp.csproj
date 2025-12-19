@@ -43,14 +43,34 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Update="openapi.processed.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 
 
     <Target Name="RestoreDotnetTools" BeforeTargets="GenerateMealieClient">
         <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
     </Target>
 
-    <Target Name="GenerateMealieClient" BeforeTargets="CoreCompile">
-        <Exec Command="dotnet tool run nswag openapi2csclient /input:&quot;$(ProjectDir)..\openapi.json&quot; /namespace:MealieMcp.Clients /output:&quot;$(IntermediateOutputPath)GeneratedMealieClient.cs&quot; /JsonLibrary:SystemTextJson /ClassName:MealieClient /OperationGenerationMode:SingleClientFromOperationId" />
+    <Target Name="PatchOpenApi" BeforeTargets="GenerateMealieClient">
+        <PropertyGroup>
+            <PatcherProject>$(ProjectDir)..\OpenApiPatcher\OpenApiPatcher.csproj</PatcherProject>
+            <InputOpenApi>$(ProjectDir)..\openapi.json</InputOpenApi>
+            <OutputOpenApi>$(IntermediateOutputPath)openapi.processed.json</OutputOpenApi>
+        </PropertyGroup>
+        
+        <Message Text="Building OpenApiPatcher..." Importance="high" />
+        <Exec Command="dotnet build &quot;$(PatcherProject)&quot; -c Release" StandardOutputImportance="Low" StandardErrorImportance="High" />
+        
+        <Message Text="Patching OpenAPI spec..." Importance="high" />
+        <Exec Command="dotnet run --project &quot;$(PatcherProject)&quot; -c Release -- &quot;$(InputOpenApi)&quot; &quot;$(OutputOpenApi)&quot;" StandardOutputImportance="Low" StandardErrorImportance="High" />
+    </Target>
+
+    <Target Name="GenerateMealieClient" BeforeTargets="CoreCompile" DependsOnTargets="PatchOpenApi">
+        <Exec Command="dotnet tool run nswag openapi2csclient /input:&quot;$(IntermediateOutputPath)openapi.processed.json&quot; /namespace:MealieMcp.Clients /output:&quot;$(IntermediateOutputPath)GeneratedMealieClient.cs&quot; /JsonLibrary:SystemTextJson /ClassName:MealieClient /OperationGenerationMode:SingleClientFromOperationId" />
         <ItemGroup>
             <Compile Include="$(IntermediateOutputPath)GeneratedMealieClient.cs" />
         </ItemGroup>
