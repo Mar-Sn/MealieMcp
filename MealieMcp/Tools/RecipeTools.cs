@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using MealieMcp.Clients;
-using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
 
+[McpServerToolType]
 public class RecipeTools
 {
     private readonly MealieClient _client;
