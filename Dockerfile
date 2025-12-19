@@ -15,7 +15,7 @@ WORKDIR "/src/MealieMcp"
 RUN dotnet publish "MealieMcp.csproj" -c Release -r linux-x64 -o /app/publish
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
@@ -23,7 +23,8 @@ COPY --from=build /app/publish .
 ENV OTEL_SERVICE_NAME="MealieMcp"
 ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
 ENV OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
-ENV ASPNETCORE_URLS="http://+:8080" # Listen on all interfaces
+# Listen on all interfaces
+ENV ASPNETCORE_URLS="http://+:8080"
 
 # The entrypoint is the executable name
 ENTRYPOINT ["./MealieMcp"]
