@@ -1,4 +1,5 @@
 using MealieMcp.Clients;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,8 +9,9 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ModelContextProtocol.AspNetCore;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 var serviceName = "MealieMcp";
 
@@ -29,7 +31,7 @@ builder.Services.AddOpenTelemetry()
         tracing
             .AddSource(serviceName)
             .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation() // Assuming AspNetCore is used implicitly by Host.CreateApplicationBuilder
+            .AddAspNetCoreInstrumentation()
             .AddOtlpExporter();
     })
     .WithMetrics(metrics =>
@@ -37,7 +39,7 @@ builder.Services.AddOpenTelemetry()
         metrics
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation() // Assuming AspNetCore is used implicitly by Host.CreateApplicationBuilder
+            .AddAspNetCoreInstrumentation()
             .AddOtlpExporter();
     });
 
@@ -54,14 +56,42 @@ builder.Services.AddHttpClient<MealieClient>()
     .AddTypedClient<MealieClient>((client, sp) =>
     {
         var config = sp.GetRequiredService<IConfiguration>();
-        var baseUrl = config["MEALIE_API_URL"] ?? "http://localhost:9000";
+        var baseUrl = config["MEALIE_API_URL"] ?? throw new InvalidOperationException("MEALIE_API_URL not set");
         return new MealieClient(baseUrl, client);
     });
 
 builder.Services.AddTransient<MealieMcp.Tools.RecipeTools>();
 
-builder.Services.AddMcpServer()
-    .WithStdioServerTransport()
+var mcpBuilder = builder.Services.AddMcpServer()
     .WithToolsFromAssembly(typeof(Program).Assembly);
 
-await builder.Build().RunAsync();
+// Determine transport mode
+var useStdio = args.Contains("--stdio") || builder.Configuration["MCP_TRANSPORT"]?.ToLower() == "stdio";
+
+if (useStdio)
+{
+    mcpBuilder.WithStdioServerTransport();
+}
+else
+{
+    mcpBuilder.WithHttpTransport();
+}
+
+var app = builder.Build();
+
+if (!useStdio)
+{
+    var apiKey = builder.Configuration["MCP_SERVER_API_KEY"];
+    if (!string.IsNullOrEmpty(apiKey))
+    {
+        app.UseWhen(context => context.Request.Path.StartsWithSegments("/mcp"), appBuilder =>
+        {
+            appBuilder.UseMiddleware<MealieMcp.Middleware.ApiKeyAuthMiddleware>(apiKey);
+        });
+    }
+
+    // Configure the HTTP request pipeline for SSE
+    app.MapMcp("/mcp");
+}
+
+await app.RunAsync();
