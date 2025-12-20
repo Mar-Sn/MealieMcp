@@ -1,6 +1,6 @@
 {
   "descriptionHash": "A449BF4D3803FE69FBAC8E85BC8FBBEB0710BF2FD5F40107CC7F395F5D573DCE83B4D40DF70E3E31ACB9856C152C82DD2ED4A89D26338696877C76311EE246F3",
-  "descriptionLocation": "../../openapi.processed.json",
+  "descriptionLocation": "../Build/bin/Debug/net10.0/openapi.processed.json",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.29.0",
   "clientClassName": "MealieClient",

@@ -14,6 +14,38 @@ namespace MealieMcp.Clients.Models
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The groupId property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId? GroupId { get; set; }
+#nullable restore
+#else
+        public global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId GroupId { get; set; }
+#endif
+        /// <summary>The id property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id? Id { get; set; }
+#nullable restore
+#else
+        public global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id Id { get; set; }
+#endif
+        /// <summary>The name property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Name { get; set; }
+#nullable restore
+#else
+        public string Name { get; set; }
+#endif
+        /// <summary>The slug property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Slug { get; set; }
+#nullable restore
+#else
+        public string Slug { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::MealieMcp.Clients.Models.RecipeTag"/> and sets the default values.
         /// </summary>
@@ -39,6 +71,10 @@ namespace MealieMcp.Clients.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "groupId", n => { GroupId = n.GetObjectValue<global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId>(global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId.CreateFromDiscriminatorValue); } },
+                { "id", n => { Id = n.GetObjectValue<global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id>(global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id.CreateFromDiscriminatorValue); } },
+                { "name", n => { Name = n.GetStringValue(); } },
+                { "slug", n => { Slug = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -48,7 +84,147 @@ namespace MealieMcp.Clients.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteObjectValue<global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId>("groupId", GroupId);
+            writer.WriteObjectValue<global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id>("id", Id);
+            writer.WriteStringValue("name", Name);
+            writer.WriteStringValue("slug", Slug);
             writer.WriteAdditionalData(AdditionalData);
+        }
+        /// <summary>
+        /// Composed type wrapper for classes <see cref="global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1"/>, <see cref="string"/>
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class RecipeTag_groupId : IComposedTypeWrapper, IParsable
+        {
+            /// <summary>Composed type representation for type <see cref="global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1? RecipeTagGroupIdMember1 { get; set; }
+#nullable restore
+#else
+            public global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1 RecipeTagGroupIdMember1 { get; set; }
+#endif
+            /// <summary>Composed type representation for type <see cref="string"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public string? String { get; set; }
+#nullable restore
+#else
+            public string String { get; set; }
+#endif
+            /// <summary>
+            /// Creates a new instance of the appropriate class based on discriminator value
+            /// </summary>
+            /// <returns>A <see cref="global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId"/></returns>
+            /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
+            public static global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId CreateFromDiscriminatorValue(IParseNode parseNode)
+            {
+                if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
+                var result = new global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_groupId();
+                if(parseNode.GetStringValue() is string stringValue)
+                {
+                    result.String = stringValue;
+                }
+                else {
+                    result.RecipeTagGroupIdMember1 = new global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1();
+                }
+                return result;
+            }
+            /// <summary>
+            /// The deserialization information for the current model
+            /// </summary>
+            /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
+            public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
+            {
+                if(RecipeTagGroupIdMember1 != null)
+                {
+                    return ParseNodeHelper.MergeDeserializersForIntersectionWrapper(RecipeTagGroupIdMember1);
+                }
+                return new Dictionary<string, Action<IParseNode>>();
+            }
+            /// <summary>
+            /// Serializes information the current object
+            /// </summary>
+            /// <param name="writer">Serialization writer to use to serialize this model</param>
+            public virtual void Serialize(ISerializationWriter writer)
+            {
+                if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+                if(String != null)
+                {
+                    writer.WriteStringValue(null, String);
+                }
+                else {
+                    writer.WriteObjectValue<global::MealieMcp.Clients.Models.RecipeTag_groupIdMember1>(null, RecipeTagGroupIdMember1);
+                }
+            }
+        }
+        /// <summary>
+        /// Composed type wrapper for classes <see cref="global::MealieMcp.Clients.Models.RecipeTag_idMember1"/>, <see cref="string"/>
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class RecipeTag_id : IComposedTypeWrapper, IParsable
+        {
+            /// <summary>Composed type representation for type <see cref="global::MealieMcp.Clients.Models.RecipeTag_idMember1"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public global::MealieMcp.Clients.Models.RecipeTag_idMember1? RecipeTagIdMember1 { get; set; }
+#nullable restore
+#else
+            public global::MealieMcp.Clients.Models.RecipeTag_idMember1 RecipeTagIdMember1 { get; set; }
+#endif
+            /// <summary>Composed type representation for type <see cref="string"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public string? String { get; set; }
+#nullable restore
+#else
+            public string String { get; set; }
+#endif
+            /// <summary>
+            /// Creates a new instance of the appropriate class based on discriminator value
+            /// </summary>
+            /// <returns>A <see cref="global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id"/></returns>
+            /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
+            public static global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id CreateFromDiscriminatorValue(IParseNode parseNode)
+            {
+                if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
+                var result = new global::MealieMcp.Clients.Models.RecipeTag.RecipeTag_id();
+                if(parseNode.GetStringValue() is string stringValue)
+                {
+                    result.String = stringValue;
+                }
+                else {
+                    result.RecipeTagIdMember1 = new global::MealieMcp.Clients.Models.RecipeTag_idMember1();
+                }
+                return result;
+            }
+            /// <summary>
+            /// The deserialization information for the current model
+            /// </summary>
+            /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
+            public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
+            {
+                if(RecipeTagIdMember1 != null)
+                {
+                    return ParseNodeHelper.MergeDeserializersForIntersectionWrapper(RecipeTagIdMember1);
+                }
+                return new Dictionary<string, Action<IParseNode>>();
+            }
+            /// <summary>
+            /// Serializes information the current object
+            /// </summary>
+            /// <param name="writer">Serialization writer to use to serialize this model</param>
+            public virtual void Serialize(ISerializationWriter writer)
+            {
+                if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+                if(String != null)
+                {
+                    writer.WriteStringValue(null, String);
+                }
+                else {
+                    writer.WriteObjectValue<global::MealieMcp.Clients.Models.RecipeTag_idMember1>(null, RecipeTagIdMember1);
+                }
+            }
         }
     }
 }
