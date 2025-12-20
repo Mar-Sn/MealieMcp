@@ -1,15 +1,10 @@
 using MealieMcp.Clients;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ModelContextProtocol.AspNetCore;
+using Microsoft.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,17 +42,28 @@ builder.Services.AddHttpClient<MealieClient>()
     .ConfigureHttpClient((sp, client) =>
     {
         var config = sp.GetRequiredService<IConfiguration>();
-        var token = config["MEALIE_API_TOKEN"];
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
+        var baseUrl = config["MEALIE_API_URL"] ?? throw new InvalidOperationException("MEALIE_API_URL not set");
+        client.BaseAddress = new Uri(baseUrl);
     })
     .AddTypedClient<MealieClient>((client, sp) =>
     {
         var config = sp.GetRequiredService<IConfiguration>();
-        var baseUrl = config["MEALIE_API_URL"] ?? throw new InvalidOperationException("MEALIE_API_URL not set");
-        return new MealieClient(baseUrl, client);
+        var token = config["MEALIE_API_TOKEN"];
+        
+        IAuthenticationProvider authProvider;
+        if (!string.IsNullOrEmpty(token))
+        {
+             // Use custom provider to allow HTTP (localhost)
+             authProvider = new InsecureApiKeyAuthenticationProvider($"Bearer {token}", "Authorization", InsecureApiKeyAuthenticationProvider.KeyLocation.Header);
+        }
+        else
+        {
+             authProvider = new AnonymousAuthenticationProvider();
+        }
+
+        var adapter = new HttpClientRequestAdapter(authProvider, httpClient: client);
+        adapter.BaseUrl = client.BaseAddress?.ToString();
+        return new MealieClient(adapter);
     });
 
 builder.Services.AddTransient<MealieMcp.Tools.RecipeTools>();

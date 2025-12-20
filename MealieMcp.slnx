@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="Build/Build.csproj" />
+  <Project Path="MealieMcp.Client/MealieMcp.Client.csproj" />
   <Project Path="MealieMcp.Tests/MealieMcp.Tests.csproj" />
   <Project Path="MealieMcp/MealieMcp.csproj" />
   <Project Path="OpenApiPatcher/OpenApiPatcher.csproj" />

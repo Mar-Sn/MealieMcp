@@ -57,6 +57,10 @@ try
         PatchNullableString(props, "rating", "Rating");
         PatchNullableString(props, "orgURL", "Org URL");
 
+        // Patch RecipeTimelineEventIn and RecipeTimelineEventOut defaults
+        PatchRemoveDefault(root, "RecipeTimelineEventIn", "timestamp");
+        PatchRemoveDefault(root, "RecipeTimelineEventOut", "timestamp");
+
         // Save the modified JSON
         File.WriteAllText(outputFile, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Successfully patched and saved to '{outputFile}'.");
@@ -83,5 +87,18 @@ static void PatchNullableString(JsonObject props, string propertyName, string ti
         obj["type"] = "string";
         obj["title"] = title;
         obj["nullable"] = true;
+    }
+}
+
+static void PatchRemoveDefault(JsonNode root, string schemaName, string propertyName)
+{
+    var props = root["components"]?["schemas"]?[schemaName]?["properties"];
+    if (props is JsonObject p && p[propertyName] is JsonObject prop)
+    {
+        if (prop.ContainsKey("default"))
+        {
+            prop.Remove("default");
+            Console.WriteLine($"Removed default value from {schemaName}.{propertyName}");
+        }
     }
 }

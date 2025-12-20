@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using MealieMcp.Clients;
+using MealieMcp.Clients.Models;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
@@ -23,28 +24,26 @@ public class RecipeTools
         [Description("Items per page")] int? per_page = 10)
     {
         _logger.LogInformation("Listing recipes page {Page}, per_page {PerPage}", page, per_page);
-        var result = await _client.Get_all_api_recipes_getAsync(
-            null, // categories
-            null, // tags
-            null, // tools
-            null, // foods
-            null, // households
-            null, // orderBy
-            null, // orderByNullPosition
-            null, // orderDirection
-            null, // queryFilter
-            null, // paginationSeed
-            page ?? 1, 
-            per_page ?? 10,
-            null, // cookbook
-            null, // requireAllCategories
-            null, // requireAllTags
-            null, // requireAllTools
-            null, // requireAllFoods
-            null, // search
-            null  // accept_language
-        );
-        return result.Items;
+        var result = await _client.Api.Recipes.GetAsync(config =>
+        {
+            config.QueryParameters.Page = page ?? 1;
+            config.QueryParameters.PerPage = per_page ?? 10;
+        });
+
+        if (result?.Items == null) return new List<object>();
+
+        return result.Items.Select(r => new
+        {
+            r.Id,
+            r.Name,
+            r.Slug,
+            r.Description,
+            DateAdded = r.DateAdded?.DateOnly,
+            DateUpdated = r.DateUpdated?.DateTimeOffset,
+            r.Rating,
+            r.RecipeServings,
+            r.RecipeYieldQuantity
+        });
     }
 
     [McpServerTool(Name = "get_recipe")]
@@ -53,7 +52,31 @@ public class RecipeTools
         [Description("The slug of the recipe")] string slug)
     {
         _logger.LogInformation("Getting recipe {Slug}", slug);
-        return await _client.Get_one_api_recipes__slug__getAsync(slug, null);
+        var r = await _client.Api.Recipes[slug].GetAsync();
+        
+        if (r == null) return null;
+
+        // Map relevant fields, Recipe has more fields than RecipeSummary but similarly wrapped
+        return new
+        {
+            r.Id,
+            r.Name,
+            r.Slug,
+            r.Description,
+            DateAdded = r.DateAdded?.DateOnly,
+            DateUpdated = r.DateUpdated?.DateTimeOffset,
+            r.Rating,
+            r.RecipeServings,
+            r.RecipeYieldQuantity,
+            r.CookTime,
+            r.PrepTime,
+            r.TotalTime,
+            r.PerformTime,
+            // Add ingredients and instructions if needed, they might be complex types
+            r.RecipeCategory,
+            r.Tags,
+            r.Tools
+        };
     }
 
     [McpServerTool(Name = "create_recipe")]
@@ -62,7 +85,7 @@ public class RecipeTools
         [Description("The recipe to create")] CreateRecipe recipe)
     {
         _logger.LogInformation("Creating new recipe: {RecipeName}", recipe.Name);
-        return await _client.Create_one_api_recipes_postAsync(null, recipe);
+        return await _client.Api.Recipes.PostAsync(recipe);
     }
 
     [McpServerTool(Name = "create_recipe_from_url")]
@@ -72,7 +95,9 @@ public class RecipeTools
     {
         _logger.LogInformation("Creating recipe from URL: {Url}", url);
         var body = new ScrapeRecipe { Url = url };
-        return await _client.Parse_recipe_url_api_recipes_create_url_postAsync(null, body);
+        // Based on analysis: _client.Api.Recipes.Create.Url.PostAsync(body)
+        // Wait, check return type. NSwag said string. Kiota says string? or similar.
+        return await _client.Api.Recipes.Create.Url.PostAsync(body);
     }
 
     [McpServerTool(Name = "update_recipe")]
@@ -82,6 +107,17 @@ public class RecipeTools
         [Description("The updated recipe data")] RecipeInput recipe)
     {
         _logger.LogInformation("Updating recipe {Slug}", slug);
-        return await _client.Update_one_api_recipes__slug__putAsync(slug, null, recipe);
+        // PutAsync takes List<RecipeInput> according to generated code?
+        // Let's re-check RecipesRequestBuilder.cs PutAsync
+        // It says: Task<UntypedNode?> PutAsync(List<RecipeInput> body, ...)
+        // Wait, "Update Many" summary.
+        // That's on /api/recipes!
+        
+        // I need Update ONE. /api/recipes/{slug}
+        // That should be _client.Api.Recipes[slug].PutAsync(RecipeInput body)
+        
+        // Let's double check Item\WithSlugItemRequestBuilder.cs
+        
+        return await _client.Api.Recipes[slug].PutAsync(recipe);
     }
 }

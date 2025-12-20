@@ -182,3 +182,7 @@ paket-files/
 
 .gemini
 .idea
+
+.env
+MealieMcp.Client/.kiota.log
+http-client.private.env.json
