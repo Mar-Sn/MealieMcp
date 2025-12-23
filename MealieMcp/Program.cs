@@ -68,6 +68,7 @@ builder.Services.AddHttpClient<MealieClient>()
 
 builder.Services.AddTransient<MealieMcp.Tools.RecipeTools>();
 builder.Services.AddTransient<MealieMcp.Tools.FoodTools>();
+builder.Services.AddTransient<MealieMcp.Tools.TagTools>();
 
 var mcpBuilder = builder.Services.AddMcpServer()
     .WithToolsFromAssembly(typeof(Program).Assembly);
