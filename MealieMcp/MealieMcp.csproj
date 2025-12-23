@@ -28,18 +28,19 @@
 
     <!-- Include additional files for browsing the MCP server. -->
     <ItemGroup>
-        <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/"/>
-        <None Include="README.md" Pack="true" PackagePath="/"/>
+        <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
+        <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.3"/>
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.4.0-preview.3"/>
+        <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.3" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.4.0-preview.3" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.8.1" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+        <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
 
         <ProjectReference Include="..\MealieMcp.Client\MealieMcp.Client.csproj" />
     </ItemGroup>

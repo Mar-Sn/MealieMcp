@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using MealieMcp.Clients;
 using MealieMcp.Clients.Models;
+using MealieMcp.Mappers;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
@@ -32,18 +33,7 @@ public class RecipeTools
 
         if (result?.Items == null) return new List<object>();
 
-        return result.Items.Select(r => new
-        {
-            r.Id,
-            r.Name,
-            r.Slug,
-            r.Description,
-            DateAdded = r.DateAdded?.DateOnly,
-            DateUpdated = r.DateUpdated?.DateTimeOffset,
-            r.Rating,
-            r.RecipeServings,
-            r.RecipeYieldQuantity
-        });
+        return result.Items.Select(r => r.ToSummary());
     }
 
     [McpServerTool(Name = "get_recipe")]
@@ -55,25 +45,7 @@ public class RecipeTools
         var r = await _client.Api.Recipes[slug].GetAsync();
         
         if (r == null) return null;
-        return new
-        {
-            r.Id,
-            r.Name,
-            r.Slug,
-            r.Description,
-            DateAdded = r.DateAdded?.DateOnly,
-            DateUpdated = r.DateUpdated?.DateTimeOffset,
-            r.Rating,
-            r.RecipeServings,
-            r.RecipeYieldQuantity,
-            r.CookTime,
-            r.PrepTime,
-            r.TotalTime,
-            r.PerformTime,
-            r.RecipeCategory,
-            r.Tags,
-            r.Tools
-        };
+        return r.ToDetail();
     }
 
     [McpServerTool(Name = "create_recipe")]
@@ -102,6 +74,13 @@ public class RecipeTools
         [Description("The updated recipe data")] RecipeInput recipe)
     {
         _logger.LogInformation("Updating recipe {Slug}", slug);
-        return await _client.Api.Recipes[slug].PutAsync(recipe);
+        try
+        {
+            return await _client.Api.Recipes[slug].PutAsync(recipe);
+        }
+        catch (Exception ex)
+        {
+            return new { error = ex.ToString() };
+        }
     }
 }

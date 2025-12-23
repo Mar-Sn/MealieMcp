@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using MealieMcp.Clients;
 using MealieMcp.Clients.Models;
+using MealieMcp.Mappers;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
@@ -37,12 +38,7 @@ public class TagTools
 
         if (result?.Items == null) return new List<object>();
 
-        return result.Items.Select(t => new
-        {
-            t.Id,
-            t.Name,
-            t.Slug
-        });
+        return result.Items.Select(t => t.ToDto());
     }
 
     [McpServerTool(Name = "get_tag")]
@@ -54,12 +50,7 @@ public class TagTools
         var t = await _client.Api.Organizers.Tags[id].GetAsync();
         
         if (t == null) return null;
-        return new
-        {
-            t.Id,
-            t.Name,
-            t.Slug
-        };
+        return t.ToDto();
     }
 
     [McpServerTool(Name = "create_tag")]
