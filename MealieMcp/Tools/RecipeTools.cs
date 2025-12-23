@@ -55,8 +55,6 @@ public class RecipeTools
         var r = await _client.Api.Recipes[slug].GetAsync();
         
         if (r == null) return null;
-
-        // Map relevant fields, Recipe has more fields than RecipeSummary but similarly wrapped
         return new
         {
             r.Id,
@@ -72,7 +70,6 @@ public class RecipeTools
             r.PrepTime,
             r.TotalTime,
             r.PerformTime,
-            // Add ingredients and instructions if needed, they might be complex types
             r.RecipeCategory,
             r.Tags,
             r.Tools
@@ -95,8 +92,6 @@ public class RecipeTools
     {
         _logger.LogInformation("Creating recipe from URL: {Url}", url);
         var body = new ScrapeRecipe { Url = url };
-        // Based on analysis: _client.Api.Recipes.Create.Url.PostAsync(body)
-        // Wait, check return type. NSwag said string. Kiota says string? or similar.
         return await _client.Api.Recipes.Create.Url.PostAsync(body);
     }
 
@@ -107,17 +102,6 @@ public class RecipeTools
         [Description("The updated recipe data")] RecipeInput recipe)
     {
         _logger.LogInformation("Updating recipe {Slug}", slug);
-        // PutAsync takes List<RecipeInput> according to generated code?
-        // Let's re-check RecipesRequestBuilder.cs PutAsync
-        // It says: Task<UntypedNode?> PutAsync(List<RecipeInput> body, ...)
-        // Wait, "Update Many" summary.
-        // That's on /api/recipes!
-        
-        // I need Update ONE. /api/recipes/{slug}
-        // That should be _client.Api.Recipes[slug].PutAsync(RecipeInput body)
-        
-        // Let's double check Item\WithSlugItemRequestBuilder.cs
-        
         return await _client.Api.Recipes[slug].PutAsync(recipe);
     }
 }
