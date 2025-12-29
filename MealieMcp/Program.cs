@@ -10,15 +10,15 @@ using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 var serviceName = "MealieMcp";
 
-builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 builder.Logging.AddOpenTelemetry(logging =>
 {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
     logging.ParseStateValues = true;
-    logging.AddOtlpExporter();
 });
 
 builder.Services.AddOpenTelemetry()
@@ -28,8 +28,7 @@ builder.Services.AddOpenTelemetry()
         tracing
             .AddSource(serviceName)
             .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddOtlpExporter();
+            .AddAspNetCoreInstrumentation();
     })
     .WithMetrics(metrics =>
     {
@@ -96,6 +95,8 @@ else
 }
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (!useStdio)
 {

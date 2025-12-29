@@ -1,6 +1,8 @@
 <Solution>
   <Project Path="Build/Build.csproj" />
+  <Project Path="MealieMcp.AppHost/MealieMcp.AppHost.csproj" />
   <Project Path="MealieMcp.Client/MealieMcp.Client.csproj" />
-  <Project Path="MealieMcp.Tests/MealieMcp.Tests.csproj" />
+  <Project Path="MealieMcp.E2E/MealieMcp.E2E.csproj" />
+  <Project Path="MealieMcp.ServiceDefaults/MealieMcp.ServiceDefaults.csproj" />
   <Project Path="MealieMcp/MealieMcp.csproj" />
 </Solution>
