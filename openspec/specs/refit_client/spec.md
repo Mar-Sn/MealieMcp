@@ -1,7 +1,8 @@
-# Spec: Refit Client Migration
+# refit_client Specification
 
-## ADDED Requirements
-
+## Purpose
+TBD - created by archiving change migrate_to_refit_polly. Update Purpose after archive.
+## Requirements
 ### Requirement: Refit Interface
 - The application MUST use `IMealieClient` interface decorated with Refit attributes for API communication.
 - The interface MUST define methods for the following **Recipe** operations: List, Get, Create, Scrape (Create from URL), Update.

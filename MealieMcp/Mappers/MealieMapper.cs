@@ -1,4 +1,6 @@
-using MealieMcp.Clients.Models;
+using MealieMcp.Client.Models.Foods;
+using MealieMcp.Client.Models.Recipes;
+using MealieMcp.Client.Models.Tags;
 using MealieMcp.Models;
 using Riok.Mapperly.Abstractions;
 
@@ -8,71 +10,33 @@ namespace MealieMcp.Mappers;
 public static partial class MealieMapper
 {
     // Food Mappings
-    public static partial FoodSummaryDto ToSummary(this IngredientFoodOutput food);
-    public static partial FoodDetailDto ToDetail(this IngredientFoodOutput food);
+    [MapProperty(nameof(Food.Label.Name), nameof(FoodSummaryDto.Label))]
+    public static partial FoodSummaryDto ToSummary(this Food food);
 
-    [MapProperty(nameof(IngredientFoodOutput.Id), nameof(CreateIngredientFood.Id))]
-    [MapProperty(nameof(IngredientFoodOutput.LabelId), nameof(CreateIngredientFood.LabelId))]
-    [MapProperty(nameof(IngredientFoodOutput.PluralName), nameof(CreateIngredientFood.PluralName))]
-    public static partial CreateIngredientFood ToCreateIngredientFood(this IngredientFoodOutput food);
-    
-    // Helpers for Food
-    private static string? MapPluralNameToString(IngredientFoodOutput.IngredientFoodOutput_pluralName? source) => 
-        source?.String ?? source?.IngredientFoodOutputPluralNameMember1?.ToString();
+    [MapProperty(nameof(Food.Label.Name), nameof(FoodDetailDto.Label))]
+    public static partial FoodDetailDto ToDetail(this Food food);
 
-    private static CreateIngredientFood.CreateIngredientFood_id? MapIdToCreateId(string? id) =>
-        id == null ? null : new CreateIngredientFood.CreateIngredientFood_id { String = id };
+    public static partial CreateIngredientFood ToCreateIngredientFood(this Food food);
 
-    private static CreateIngredientFood.CreateIngredientFood_labelId? MapLabelIdToCreateLabelId(IngredientFoodOutput.IngredientFoodOutput_labelId? source) =>
-        source == null ? null : new CreateIngredientFood.CreateIngredientFood_labelId { String = source.String ?? source.IngredientFoodOutputLabelIdMember1?.ToString() };
-
-    private static CreateIngredientFood.CreateIngredientFood_pluralName? MapPluralNameToCreatePluralName(IngredientFoodOutput.IngredientFoodOutput_pluralName? source) =>
-        source == null ? null : new CreateIngredientFood.CreateIngredientFood_pluralName { String = source.String ?? source.IngredientFoodOutputPluralNameMember1?.ToString() };
-
-    private static CreateIngredientFoodAlias MapAlias(IngredientFoodAlias alias) => 
-        new CreateIngredientFoodAlias { Name = alias.Name, AdditionalData = alias.AdditionalData };
-
+    private static string? MapFoodAlias(FoodAlias alias) => alias.Alias;
 
     // Recipe Mappings
     public static partial RecipeSummaryDto ToSummary(this RecipeSummary recipe);
-    public static partial RecipeDetailDto ToDetail(this RecipeOutput recipe);
+    public static partial RecipeDetailDto ToDetail(this RecipeDetail recipe);
 
-    // Helpers for Recipe Summary
-    private static Microsoft.Kiota.Abstractions.Date? MapDateAddedSummary(RecipeSummary.RecipeSummary_dateAdded? dateAdded) =>
-        dateAdded?.DateOnly;
+    public static partial RecipeInput ToRecipeInput(this RecipeDetail recipe);
 
-    private static DateTimeOffset? MapDateUpdatedSummary(RecipeSummary.RecipeSummary_dateUpdated? dateUpdated) =>
-        dateUpdated?.DateTimeOffset;
-
-    // Helpers for Recipe Output
-    private static string? MapRecipeOutputName(RecipeOutput.RecipeOutput_name? name) =>
-        name?.String ?? name?.RecipeOutputNameMember1?.ToString();
-
-    private static Microsoft.Kiota.Abstractions.Date? MapDateAddedOutput(RecipeOutput.RecipeOutput_dateAdded? dateAdded) =>
-        dateAdded?.DateOnly;
-
-    private static DateTimeOffset? MapDateUpdatedOutput(RecipeOutput.RecipeOutput_dateUpdated? dateUpdated) =>
-        dateUpdated?.DateTimeOffset;
-
-    private static object? MapRecipeOutputRating(RecipeOutput.RecipeOutput_rating? rating) =>
-        rating?.Double != null ? rating.Double : rating?.RecipeOutputRatingMember1;
-
-    private static object? MapRecipeOutputCookTime(RecipeOutput.RecipeOutput_cookTime? time) =>
-        time?.String ?? (object?)time?.RecipeOutputCookTimeMember1;
-
-    private static object? MapRecipeOutputPrepTime(RecipeOutput.RecipeOutput_prepTime? time) =>
-        time?.String ?? (object?)time?.RecipeOutputPrepTimeMember1;
-
-    private static object? MapRecipeOutputTotalTime(RecipeOutput.RecipeOutput_totalTime? time) =>
-        time?.String ?? (object?)time?.RecipeOutputTotalTimeMember1;
-
-    private static object? MapRecipeOutputPerformTime(RecipeOutput.RecipeOutput_performTime? time) =>
-        time?.String ?? (object?)time?.RecipeOutputPerformTimeMember1;
-        
     // Tag Mappings
-    public static partial TagDto ToDto(this RecipeTagResponse tag);
-    public static partial TagDto ToDto(this RecipeTag tag);
+    public static partial TagDto ToDto(this Tag tag);
 
-    private static string? MapRecipeTagId(RecipeTag.RecipeTag_id? id) =>
-        id?.String ?? id?.RecipeTagIdMember1?.ToString();
+    // Recipe Details Sub-Object Mappings
+    public static partial RecipeCategoryDto ToRecipeCategoryDto(this RecipeCategory category);
+    public static partial RecipeTagDto ToRecipeTagDto(this RecipeTag tag);
+    public static partial RecipeToolDto ToDto(this RecipeTool tool);
+    
+    [MapProperty(nameof(RecipeIngredient.Food.Name), nameof(RecipeIngredientDto.Food))]
+    [MapProperty(nameof(RecipeIngredient.Unit.Name), nameof(RecipeIngredientDto.Unit))]
+    public static partial RecipeIngredientDto ToDto(this RecipeIngredient ingredient);
+
+    public static partial RecipeInstructionDto ToDto(this RecipeInstruction instruction);
 }

@@ -1,43 +1,25 @@
 using System.ComponentModel;
-using MealieMcp.Clients;
-using MealieMcp.Clients.Models;
+using MealieMcp.Client;
+using MealieMcp.Client.Models.Foods;
 using MealieMcp.Mappers;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
 
 [McpServerToolType]
-public class FoodTools
+public class FoodTools(IMealieClient client, ILogger<FoodTools> logger)
 {
-    private readonly MealieClient _client;
-    private readonly ILogger<FoodTools> _logger;
-
-    public FoodTools(MealieClient client, ILogger<FoodTools> logger)
-    {
-        _client = client;
-        _logger = logger;
-    }
-
     [McpServerTool(Name = "list_foods")]
     [Description("List foods (ingredients) with pagination")]
     public async Task<object> ListFoods(
         [Description("Page number")] int? page = 1, 
-        [Description("Items per page")] int? per_page = 10,
+        [Description("Items per page")] int? perPage = 10,
         [Description("Search query")] string? search = null)
     {
-        _logger.LogInformation("Listing foods page {Page}, per_page {PerPage}, search {Search}", page, per_page, search);
-        var result = await _client.Api.Foods.GetAsync(config =>
-        {
-            config.QueryParameters.Page = page ?? 1;
-            config.QueryParameters.PerPage = per_page ?? 10;
-            if (!string.IsNullOrEmpty(search))
-            {
-                config.QueryParameters.Search = search;
-            }
-        });
+        logger.LogInformation("Listing foods page {Page}, per_page {PerPage}, search {Search}", page, perPage, search);
+        var result = await client.ListFoodsAsync(page ?? 1, perPage ?? 10, search);
 
         if (result?.Items == null) return new List<object>();
-
         return result.Items.Select(f => f.ToSummary());
     }
 
@@ -46,10 +28,8 @@ public class FoodTools
     public async Task<object> GetFood(
         [Description("The ID of the food")] string id)
     {
-        _logger.LogInformation("Getting food {Id}", id);
-        var f = await _client.Api.Foods[id].GetAsync();
-        
-        if (f == null) return null;
+        logger.LogInformation("Getting food {Id}", id);
+        var f = await client.GetFoodAsync(id) ?? throw new Exception($"Recipe with slug {id} not found");;
         return f.ToDetail();
     }
 
@@ -60,14 +40,14 @@ public class FoodTools
         [Description("The plural name of the food")] string? pluralName = null,
         [Description("The description of the food")] string? description = null)
     {
-        _logger.LogInformation("Creating new food: {FoodName}", name);
+        logger.LogInformation("Creating new food: {FoodName}", name);
         var food = new CreateIngredientFood
         {
             Name = name,
-            PluralName = pluralName != null ? new CreateIngredientFood.CreateIngredientFood_pluralName { String = pluralName } : null,
+            PluralName = pluralName,
             Description = description
         };
-        var result = await _client.Api.Foods.PostAsync(food);
+        var result = await client.CreateFoodAsync(food);
         return result?.Id ?? string.Empty;
     }
 
@@ -79,18 +59,18 @@ public class FoodTools
         [Description("The new plural name of the food")] string? pluralName = null,
         [Description("The new description of the food")] string? description = null)
     {
-        _logger.LogInformation("Updating food {Id}", id);
-        
-        var existing = await _client.Api.Foods[id].GetAsync();
+        logger.LogInformation("Updating food {Id}", id);
+        var existing = await client.GetFoodAsync(id);
         if (existing == null) throw new Exception($"Food with ID {id} not found");
 
-        var update = existing.ToCreateIngredientFood();
-        
-        if (name != null) update.Name = name;
-        if (pluralName != null) update.PluralName = new CreateIngredientFood.CreateIngredientFood_pluralName { String = pluralName };
-        if (description != null) update.Description = description;
+        var update = new CreateIngredientFood
+        {
+            Name = name ?? existing.Name,
+            PluralName = pluralName ?? existing.PluralName,
+            Description = description ?? existing.Description
+        };
 
-        return await _client.Api.Foods[id].PutAsync(update);
+        return await client.UpdateFoodAsync(id, update);
     }
 
     [McpServerTool(Name = "delete_food")]
@@ -98,8 +78,8 @@ public class FoodTools
     public async Task<string> DeleteFood(
         [Description("The ID of the food to delete")] string id)
     {
-        _logger.LogInformation("Deleting food {Id}", id);
-        await _client.Api.Foods[id].DeleteAsync();
+        logger.LogInformation("Deleting food {Id}", id);
+        await client.DeleteFoodAsync(id);
         return $"Food {id} deleted successfully";
     }
 }

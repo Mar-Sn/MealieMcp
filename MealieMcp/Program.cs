@@ -1,10 +1,12 @@
 using MealieMcp.Clients;
+using MealieMcp.Client;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
+using Refit;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,38 +36,46 @@ builder.Services.AddOpenTelemetry()
         metrics
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddOtlpExporter();
+            .AddAspNetCoreInstrumentation();
     });
 
-builder.Services.AddHttpClient<MealieClient>()
+var retryPolicy = HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+var circuitBreakerPolicy = HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+
+var jsonOptions = new System.Text.Json.JsonSerializerOptions
+{
+    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+};
+
+var refitSettings = new RefitSettings
+{
+    ContentSerializer = new SystemTextJsonContentSerializer(jsonOptions)
+};
+
+builder.Services.AddRefitClient<IMealieClient>(refitSettings)
     .ConfigureHttpClient((sp, client) =>
     {
         var config = sp.GetRequiredService<IConfiguration>();
         var baseUrl = config["MEALIE_API_URL"] ?? throw new InvalidOperationException("MEALIE_API_URL not set");
         client.BaseAddress = new Uri(baseUrl);
     })
-    .AddTypedClient<MealieClient>((client, sp) =>
+    .AddHttpMessageHandler(sp =>
     {
         var config = sp.GetRequiredService<IConfiguration>();
-        var token = config["MEALIE_API_TOKEN"];
-        
-        IAuthenticationProvider authProvider;
-        if (!string.IsNullOrEmpty(token))
-        {
-             // Use custom provider to allow HTTP (localhost)
-             authProvider = new InsecureApiKeyAuthenticationProvider($"Bearer {token}", "Authorization", InsecureApiKeyAuthenticationProvider.KeyLocation.Header);
-        }
-        else
-        {
-             authProvider = new AnonymousAuthenticationProvider();
-        }
+        var token = config["MEALIE_API_TOKEN"] ?? throw new InvalidOperationException("MEALIE_API_TOKEN not set");;
+        return new MealieAuthHandler(token);
+    })
+    .AddHttpMessageHandler<LoggingHandler>()
+    .AddPolicyHandler(retryPolicy)
+    .AddPolicyHandler(circuitBreakerPolicy);
 
-        var adapter = new HttpClientRequestAdapter(authProvider, httpClient: client);
-        adapter.BaseUrl = client.BaseAddress?.ToString();
-        return new MealieClient(adapter);
-    });
-
+builder.Services.AddTransient<LoggingHandler>();
 builder.Services.AddTransient<MealieMcp.Tools.RecipeTools>();
 builder.Services.AddTransient<MealieMcp.Tools.FoodTools>();
 builder.Services.AddTransient<MealieMcp.Tools.TagTools>();

@@ -1,40 +1,23 @@
 using System.ComponentModel;
-using MealieMcp.Clients;
-using MealieMcp.Clients.Models;
+using MealieMcp.Client;
+using MealieMcp.Client.Models.Tags;
 using MealieMcp.Mappers;
 using ModelContextProtocol.Server;
 
 namespace MealieMcp.Tools;
 
 [McpServerToolType]
-public class TagTools
+public class TagTools(IMealieClient client, ILogger<TagTools> logger)
 {
-    private readonly MealieClient _client;
-    private readonly ILogger<TagTools> _logger;
-
-    public TagTools(MealieClient client, ILogger<TagTools> logger)
-    {
-        _client = client;
-        _logger = logger;
-    }
-
     [McpServerTool(Name = "list_tags")]
     [Description("List tags with pagination")]
     public async Task<object> ListTags(
         [Description("Page number")] int? page = 1, 
-        [Description("Items per page")] int? per_page = 10,
+        [Description("Items per page")] int? perPage = 10,
         [Description("Search query")] string? search = null)
     {
-        _logger.LogInformation("Listing tags page {Page}, per_page {PerPage}, search {Search}", page, per_page, search);
-        var result = await _client.Api.Organizers.Tags.GetAsync(config =>
-        {
-            config.QueryParameters.Page = page ?? 1;
-            config.QueryParameters.PerPage = per_page ?? 10;
-            if (!string.IsNullOrEmpty(search))
-            {
-                config.QueryParameters.Search = search;
-            }
-        });
+        logger.LogInformation("Listing tags page {Page}, per_page {PerPage}, search {Search}", page, perPage, search);
+        var result = await client.ListTagsAsync(page ?? 1, perPage ?? 10, search);
 
         if (result?.Items == null) return new List<object>();
 
@@ -46,8 +29,8 @@ public class TagTools
     public async Task<object> GetTag(
         [Description("The ID of the tag")] string id)
     {
-        _logger.LogInformation("Getting tag {Id}", id);
-        var t = await _client.Api.Organizers.Tags[id].GetAsync();
+        logger.LogInformation("Getting tag {Id}", id);
+        var t = await client.GetTagAsync(id);
         
         if (t == null) return null;
         return t.ToDto();
@@ -58,18 +41,13 @@ public class TagTools
     public async Task<object> CreateTag(
         [Description("The name of the tag")] string name)
     {
-        _logger.LogInformation("Creating new tag: {TagName}", name);
+        logger.LogInformation("Creating new tag: {TagName}", name);
         var tag = new TagIn
         {
             Name = name
         };
-        // PostAsync returns UntypedNode according to Kiota generation in some cases, 
-        // or RecipeTagResponse in others. Let's check the generated code or use UntypedNode helper if needed.
-        // Based on search results: public async Task<UntypedNode> PostAsync(...)
-        var result = await _client.Api.Organizers.Tags.PostAsync(tag);
-        
-        // Return the raw result for now as we might need to parse it if it's UntypedNode
-        return result; 
+        var result = await client.CreateTagAsync(tag);
+        return result.ToDto(); 
     }
 
     [McpServerTool(Name = "update_tag")]
@@ -78,17 +56,15 @@ public class TagTools
         [Description("The ID of the tag to update")] string id,
         [Description("The new name of the tag")] string name)
     {
-        _logger.LogInformation("Updating tag {Id}", id);
+        logger.LogInformation("Updating tag {Id}", id);
         
-        var existing = await _client.Api.Organizers.Tags[id].GetAsync();
-        if (existing == null) throw new Exception($"Tag with ID {id} not found");
-
         var update = new TagIn
         {
             Name = name
         };
 
-        return await _client.Api.Organizers.Tags[id].PutAsync(update);
+        var result = await client.UpdateTagAsync(id, update);
+        return result.ToDto();
     }
 
     [McpServerTool(Name = "delete_tag")]
@@ -96,8 +72,8 @@ public class TagTools
     public async Task<string> DeleteTag(
         [Description("The ID of the tag to delete")] string id)
     {
-        _logger.LogInformation("Deleting tag {Id}", id);
-        await _client.Api.Organizers.Tags[id].DeleteAsync();
+        logger.LogInformation("Deleting tag {Id}", id);
+        await client.DeleteTagAsync(id);
         return $"Tag {id} deleted successfully";
     }
 }

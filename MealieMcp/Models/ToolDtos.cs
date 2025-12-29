@@ -1,24 +1,21 @@
-using MealieMcp.Clients.Models;
-using Microsoft.Kiota.Abstractions.Serialization;
-
 namespace MealieMcp.Models;
 
 public record FoodSummaryDto(
-    string? Id, 
-    string? Name, 
-    string? PluralName, 
-    string? Description, 
-    MultiPurposeLabelSummary? Label
+    string? Id,
+    string? Name,
+    string? PluralName,
+    string? Description,
+    string? Label
 );
 
 public record FoodDetailDto(
-    string? Id, 
-    string? Name, 
-    string? PluralName, 
-    string? Description, 
-    List<IngredientFoodAlias>? Aliases, 
-    MultiPurposeLabelSummary? Label, 
-    UntypedNode? Extras
+    string? Id,
+    string? Name,
+    string? PluralName,
+    string? Description,
+    List<string?>? Aliases,
+    string? Label,
+    Dictionary<string, object>? Extras
 );
 
 public record RecipeSummaryDto(
@@ -26,9 +23,9 @@ public record RecipeSummaryDto(
     string? Name,
     string? Slug,
     string? Description,
-    Microsoft.Kiota.Abstractions.Date? DateAdded,
+    DateTime? DateAdded,
     DateTimeOffset? DateUpdated,
-    object? Rating, // Rating is complex in model
+    double? Rating,
     double? RecipeServings,
     double? RecipeYieldQuantity
 );
@@ -38,24 +35,42 @@ public record RecipeDetailDto(
     string? Name,
     string? Slug,
     string? Description,
-    Microsoft.Kiota.Abstractions.Date? DateAdded,
+    DateTime? DateAdded,
     DateTimeOffset? DateUpdated,
-    object? Rating,
+    double? Rating,
     double? RecipeServings,
     double? RecipeYieldQuantity,
-    object? CookTime,
-    object? PrepTime,
-    object? TotalTime,
-    object? PerformTime,
-    List<RecipeCategory>? RecipeCategory,
-    List<RecipeTag>? Tags,
-    List<RecipeTool>? Tools,
-    List<RecipeIngredientOutput>? RecipeIngredient,
-    List<RecipeStep>? RecipeInstructions
+    string? CookTime,
+    string? PrepTime,
+    string? TotalTime,
+    string? PerformTime,
+    List<RecipeCategoryDto>? RecipeCategory,
+    List<RecipeTagDto>? Tags,
+    List<RecipeToolDto>? Tools,
+    List<RecipeIngredientDto>? RecipeIngredient,
+    List<RecipeInstructionDto>? RecipeInstructions
 );
 
 public record TagDto(
     string? Id,
     string? Name,
     string? Slug
+);
+
+public record RecipeCategoryDto(string? Id, string? Name, string? Slug);
+public record RecipeTagDto(string? Id, string? Name, string? Slug);
+public record RecipeToolDto(string? Id, string? Name, string? Slug);
+
+public record RecipeIngredientDto(
+    string? Display,
+    string? Food,
+    double? Quantity,
+    string? Unit,
+    string? Note
+);
+
+public record RecipeInstructionDto(
+    string? Id,
+    string? Title,
+    string? Text
 );
