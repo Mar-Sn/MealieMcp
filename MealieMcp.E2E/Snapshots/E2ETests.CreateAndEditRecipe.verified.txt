@@ -1,0 +1,24 @@
+﻿{
+  name: Test Recipe,
+  description: ,
+  dateUpdated: DateTimeOffset_1,
+  recipeServings: 0,
+  recipeYieldQuantity: 0,
+  recipeIngredient: [
+    {
+      display: 1 Bread,
+      food: Bread,
+      quantity: 1
+    }
+  ],
+  recipeInstructions: [
+    {
+      summary: Mix ingredients,
+      text: Mix all ingredients together
+    },
+    {
+      summary: Bake at 350F,
+      text: Bake for 30 minutes
+    }
+  ]
+}

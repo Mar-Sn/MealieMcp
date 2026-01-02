@@ -78,28 +78,39 @@ public class RecipeIngredient
     
     [JsonPropertyName("note")]
     public string? Note { get; set; }
+
+    [JsonPropertyName("referenceId")]
+    public required string ReferenceId { get; set; }
 }
 
 public class RecipeIngredientFood
 {
+    [JsonPropertyName("id")]
+    public required string Id { get; set; }
+
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 }
 
 public class RecipeIngredientUnit
 {
+    [JsonPropertyName("id")]
+    public required string Id { get; set; }
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 }
 
 public class RecipeInstruction
 {
     [JsonPropertyName("id")]
     public string? Id { get; set; }
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
+
+    [JsonPropertyName("summary")]
+    public string? Summary { get; set; }
+
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+
     [JsonPropertyName("ingredientReferences")]
     public List<object>? IngredientReferences { get; set; } = [];
 }

@@ -71,6 +71,6 @@ public record RecipeIngredientDto(
 
 public record RecipeInstructionDto(
     string? Id,
-    string? Title,
+    string? Summary,
     string? Text
 );

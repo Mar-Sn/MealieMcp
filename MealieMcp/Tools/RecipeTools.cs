@@ -17,9 +17,7 @@ public class RecipeTools(IMealieClient client, ILogger<RecipeTools> logger)
     {
         logger.LogInformation("Listing recipes page {Page}, per_page {PerPage}", page, perPage);
         var result = await client.ListRecipesAsync(page ?? 1, perPage ?? 10);
-
         if (result?.Items == null) return new List<object>();
-
         return result.Items.Select(r => r.ToSummary());
     }
 
@@ -55,10 +53,10 @@ public class RecipeTools(IMealieClient client, ILogger<RecipeTools> logger)
     [McpServerTool(Name = "create_recipe")]
     [Description("Create a new recipe")]
     public async Task<string> CreateRecipe(
-        [Description("The recipe to create")] CreateRecipe recipe)
+        [Description("The recipe name")] string name)
     {
-        logger.LogInformation("Creating new recipe: {RecipeName}", recipe.Name);
-        return await client.CreateRecipeAsync(recipe);
+        logger.LogInformation("Creating new recipe: {RecipeName}", name);
+        return await client.CreateRecipeAsync(new CreateRecipe { Name = name });
     }
 
     [McpServerTool(Name = "create_recipe_from_url")]
@@ -84,19 +82,6 @@ public class RecipeTools(IMealieClient client, ILogger<RecipeTools> logger)
         return await client.UpdateRecipeAsync(slug, recipe);
     }
 
-    [McpServerTool(Name = "update_recipe_instructions")]
-    [Description("Update recipe instructions")]
-    public async Task<object> UpdateRecipeInstructions(
-        [Description("The slug of the recipe")]
-        string slug,
-        [Description("The new instructions")] List<RecipeInstruction> instructions)
-    {
-        logger.LogInformation("Updating instructions for recipe {Slug}", slug);
-        var input = await client.GetRecipeAsync(slug)  ?? throw new Exception($"Recipe with slug {slug} not found");
-        input.RecipeInstructions = instructions;
-        return await client.UpdateRecipeAsync(slug, input.ToRecipeInput());
-    }
-
     [McpServerTool(Name = "update_recipe_ingredients")]
     [Description("Update recipe ingredients")]
     public async Task<object> UpdateRecipeIngredients(
@@ -105,8 +90,21 @@ public class RecipeTools(IMealieClient client, ILogger<RecipeTools> logger)
         [Description("The new ingredients")] List<RecipeIngredient> ingredients)
     {
         logger.LogInformation("Updating ingredients for recipe {Slug}", slug);
-        var input = await client.GetRecipeAsync(slug)  ?? throw new Exception($"Recipe with slug {slug} not found");
+        var input = await client.GetRecipeAsync(slug) ?? throw new Exception($"Recipe with slug {slug} not found");
         input.RecipeIngredient = ingredients;
+        return await client.UpdateRecipeAsync(slug, input.ToRecipeInput());
+    }
+
+    [McpServerTool(Name = "update_recipe_instructions")]
+    [Description("Update recipe instructions")]
+    public async Task<object> UpdateRecipeInstructions(
+        [Description("The slug of the recipe")]
+        string slug,
+        [Description("The new instructions")] List<RecipeInstruction> instructions)
+    {
+        logger.LogInformation("Updating instructions for recipe {Slug}", slug);
+        var input = await client.GetRecipeAsync(slug) ?? throw new Exception($"Recipe with slug {slug} not found");
+        input.RecipeInstructions = instructions;
         return await client.UpdateRecipeAsync(slug, input.ToRecipeInput());
     }
 }

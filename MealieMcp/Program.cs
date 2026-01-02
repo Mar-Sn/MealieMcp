@@ -64,16 +64,12 @@ builder.Services.AddRefitClient<IMealieClient>(refitSettings)
         var baseUrl = config["MEALIE_API_URL"] ?? throw new InvalidOperationException("MEALIE_API_URL not set");
         client.BaseAddress = new Uri(baseUrl);
     })
-    .AddHttpMessageHandler(sp =>
-    {
-        var config = sp.GetRequiredService<IConfiguration>();
-        var token = config["MEALIE_API_TOKEN"] ?? throw new InvalidOperationException("MEALIE_API_TOKEN not set");;
-        return new MealieAuthHandler(token);
-    })
+    .AddHttpMessageHandler<MealieAuthHandler>()
     .AddHttpMessageHandler<LoggingHandler>()
     .AddPolicyHandler(retryPolicy)
     .AddPolicyHandler(circuitBreakerPolicy);
 
+builder.Services.AddTransient<MealieAuthHandler>();
 builder.Services.AddTransient<LoggingHandler>();
 builder.Services.AddTransient<MealieMcp.Tools.RecipeTools>();
 builder.Services.AddTransient<MealieMcp.Tools.FoodTools>();

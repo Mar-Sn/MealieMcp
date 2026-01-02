@@ -55,4 +55,9 @@ public interface IMealieClient
 
     [Delete("/api/organizers/tags/{id}")]
     Task DeleteTagAsync(string id);
+
+    // Auth
+    [Post("/api/auth/token")]
+    [Headers("Content-Type: application/x-www-form-urlencoded")]
+    Task<TokenResponse> LoginAsync([Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> credentials);
 }
